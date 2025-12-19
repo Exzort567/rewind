@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Play, Video, Camera, FileText, Clock, ChevronLeft, ChevronRight } from 'lucide-react'
 
@@ -46,13 +45,15 @@ const StoryCard = ({ story, index, onSelect, formatDate, getMediaInfo }) => {
   )
 }
 
-const StoriesGrid = ({ stories, onStorySelect, formatDate, getMediaInfo }) => {
-  const [currentPage, setCurrentPage] = useState(1)
+const StoriesGrid = ({ 
+  stories, 
+  onStorySelect, 
+  formatDate, 
+  getMediaInfo,
+  currentPage,
+  setCurrentPage
+}) => {
   const itemsPerPage = 50
-
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [stories])
 
   const totalPages = Math.ceil(stories.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage

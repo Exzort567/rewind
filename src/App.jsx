@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { 
   Header, 
@@ -27,6 +28,13 @@ function App() {
     getMediaInfo,
     resetApp
   } = useStories()
+
+  const [currentPage, setCurrentPage] = useState(1)
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [dateFilter, searchTerm, stories.length])
 
   return (
     <div className="app">
@@ -76,6 +84,8 @@ function App() {
                     onStorySelect={setSelectedStory}
                     formatDate={formatDate}
                     getMediaInfo={getMediaInfo}
+                    currentPage={currentPage}
+                    setCurrentPage={setCurrentPage}
                   />
                 </>
               )}
