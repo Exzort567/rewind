@@ -1,34 +1,89 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { AnimatePresence, motion } from 'framer-motion'
+import { 
+  Header, 
+  Background, 
+  UploadSection, 
+  FilterSection, 
+  StoriesGrid, 
+  StoryDetail 
+} from './components'
+import { useStories } from './hooks'
+import { formatDate } from './utils'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const {
+    stories,
+    filteredStories,
+    dateFilter,
+    setDateFilter,
+    isUploading,
+    uploadProgress,
+    selectedStory,
+    setSelectedStory,
+    searchTerm,
+    setSearchTerm,
+    handleFileUpload,
+    getMediaInfo,
+    resetApp
+  } = useStories()
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="app">
+      <Background />
+      
+      <Header 
+        showReset={stories.length > 0} 
+        onReset={resetApp} 
+      />
+
+      <main className="main">
+        <AnimatePresence mode="wait">
+          {selectedStory ? (
+            <StoryDetail 
+              key="detail"
+              story={selectedStory} 
+              onClose={() => setSelectedStory(null)}
+              formatDate={formatDate}
+              getMediaInfo={getMediaInfo}
+            />
+          ) : (
+            <motion.div
+              key="main-content"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="main-content"
+            >
+              {stories.length === 0 ? (
+                <UploadSection 
+                  onFileUpload={handleFileUpload} 
+                  isUploading={isUploading}
+                  uploadProgress={uploadProgress}
+                />
+              ) : (
+                <>
+                  <FilterSection 
+                    dateFilter={dateFilter}
+                    setDateFilter={setDateFilter}
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    storiesCount={filteredStories.length}
+                    totalCount={stories.length}
+                  />
+                  <StoriesGrid 
+                    stories={filteredStories}
+                    onStorySelect={setSelectedStory}
+                    formatDate={formatDate}
+                    getMediaInfo={getMediaInfo}
+                  />
+                </>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+    </div>
   )
 }
 
