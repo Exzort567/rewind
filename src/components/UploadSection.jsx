@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Upload, Video, Camera, Calendar, FolderOpen } from 'lucide-react'
+import { Upload, Video, Camera, Calendar, FolderOpen, Clock } from 'lucide-react'
 import ExportInstructions from './ExportInstructions'
 
 const UploadSection = ({ onFileUpload, isUploading, uploadProgress }) => {
@@ -27,7 +27,7 @@ const UploadSection = ({ onFileUpload, isUploading, uploadProgress }) => {
           </motion.div>
           <h2>Upload Your Facebook Archive</h2>
           <p className="upload-desc">
-            Select your Facebook data archive (ZIP file) to view your archived stories with full media playback
+            Select your Facebook data archive (ZIP file) to view your archived stories and timeline posts in a clean, ad-free interface
           </p>
           <p className="upload-instructions">
             <button 
@@ -49,6 +49,10 @@ const UploadSection = ({ onFileUpload, isUploading, uploadProgress }) => {
             <div className="info-item">
               <Calendar size={16} />
               <span>Filter by date</span>
+            </div>
+            <div className="info-item">
+              <Clock size={16} />
+              <span>Timeline view</span>
             </div>
           </div>
           <label className="file-input-label">

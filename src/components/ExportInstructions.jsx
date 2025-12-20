@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Settings, Download, FileJson, CheckCircle, Clock, AlertTriangle, Coffee } from "lucide-react";
+import { X, Settings, Download, FileJson, CheckCircle, Clock, AlertTriangle, Coffee, CheckSquare, Square } from "lucide-react";
 
 const ExportInstructions = ({ isOpen, onClose }) => {
   const steps = [
@@ -21,12 +21,12 @@ const ExportInstructions = ({ isOpen, onClose }) => {
     {
       icon: <FileJson size={20} />,
       title: "Choose Specific Info (IMPORTANT!)",
-      description: "Don't be greedy! Under 'Choose specific info to export', select only 'Your Facebook activity' → 'Stories'. Trust me, you don't need 47GB of random data clogging up your download."
+      description: "Don't be greedy! Under 'Choose specific info to export', select only 'Your Facebook activity' → 'Stories' and 'Posts'. Trust me, you don't need 47GB of random data clogging up your download."
     },
     {
       icon: <Clock size={20} />,
       title: "Set Date Range",
-      description: "Pick your date range. Want all your stories from 2015? Sure, but that's gonna take a while... but again, you can just wait it 😉"
+      description: "Pick your date range. Want all your posts from 2015? Sure, but that's gonna take a while... but again, you can just wait it 😉"
     },
     {
       icon: <FileJson size={20} />,
@@ -38,6 +38,12 @@ const ExportInstructions = ({ isOpen, onClose }) => {
       title: "Media Quality",
       description: "Choose your media quality. High quality = beautiful memories but longer wait times. Low quality = potato pixels but faster downloads. Your choice, but again... you can just wait it 🤷‍♂️"
     }
+  ]
+
+  const dataChecklist = [
+    { label: 'Posts', checked: true, description: 'Your timeline posts, photos, videos, and status updates' },
+    { label: 'Stories', checked: true, description: 'Your archived Stories content' },
+    { label: 'Profile information', checked: false, description: 'Optional - includes your avatar' }
   ]
 
   return (
@@ -73,6 +79,25 @@ const ExportInstructions = ({ isOpen, onClose }) => {
                 <div>
                   <strong>Fair Warning:</strong> This process might take anywhere from 30 minutes to several hours depending on how much digital baggage you've accumulated. 
                   Perfect time to make some coffee, binge a Netflix series, or contemplate your life choices.
+                </div>
+              </div>
+
+              {/* Data Selection Checklist */}
+              <div className="data-checklist">
+                <h4>📋 What to Select When Exporting</h4>
+                <div className="checklist-items">
+                  {dataChecklist.map((item, idx) => (
+                    <div key={idx} className={`checklist-item ${item.checked ? 'recommended' : 'optional'}`}>
+                      {item.checked ? <CheckSquare size={20} /> : <Square size={20} />}
+                      <div className="checklist-content">
+                        <span className="checklist-label">{item.label}</span>
+                        <span className="checklist-desc">{item.description}</span>
+                      </div>
+                      <span className={`checklist-badge ${item.checked ? 'required' : 'optional'}`}>
+                        {item.checked ? 'Required' : 'Optional'}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
 

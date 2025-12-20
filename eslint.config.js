@@ -25,5 +25,10 @@ export default defineConfig([
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
+    images: {
+      domains: [
+        "api.microlink.io", // Microlink Image Preview
+      ],
+    },
   },
 ])
