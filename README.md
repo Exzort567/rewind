@@ -90,7 +90,6 @@ npm run dev
 - **Year Filter**: Browse posts from specific years
 - **Media Filter**: Show only posts with photos or videos
 - **Date Range**: Find posts from specific time periods
-- **Real-time Search**: Find content instantly
 
 ## Project Structure
 
@@ -133,16 +132,6 @@ src/
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Facebook for providing data export functionality
-- React team for the amazing framework
-- Tailwind CSS for beautiful styling utilities
-- Framer Motion for smooth animations
 
 ---
 
