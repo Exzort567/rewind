@@ -147,22 +147,19 @@ export const useStories = () => {
       
       setUploadProgress(`Found ${storiesWithMedia} stories with media (${mediaPaths.length} unique files)`)
       
-      // Extract media files with smart prioritization
+      // Extract ALL media files (no arbitrary limits)
       let extracted = 0
       const totalMedia = mediaPaths.length
-      // Increase limits but still be reasonable for memory
-      const maxMediaFiles = isMobile ? 150 : 500 // Increased limits
-      const targetFiles = Math.min(totalMedia, maxMediaFiles)
       
-      setUploadProgress(`Extracting media files (0/${targetFiles})...`)
+      setUploadProgress(`Extracting media files (0/${totalMedia})...`)
       
-      // Process media files in story order (no sorting/randomization)
-      for (let i = 0; i < Math.min(mediaPaths.length, maxMediaFiles); i++) {
+      // Process ALL media files in story order
+      for (let i = 0; i < mediaPaths.length; i++) {
         const mediaPath = mediaPaths[i]
         
-        // Add delay on mobile to prevent memory issues
-        if (isMobile && extracted % 5 === 0) {
-          await new Promise(resolve => setTimeout(resolve, 50))
+        // Add delay on mobile to prevent memory issues (less frequent)
+        if (isMobile && extracted % 20 === 0) {
+          await new Promise(resolve => setTimeout(resolve, 10))
         }
         
         const possiblePaths = [
@@ -174,9 +171,10 @@ export const useStories = () => {
           const mediaFile = zipContent.files[tryPath]
           if (mediaFile && !mediaFile.dir) {
             try {
-              // Check file size before processing on mobile
-              if (isMobile && mediaFile._data && mediaFile._data.uncompressedSize > 10 * 1024 * 1024) {
-                continue // Skip files larger than 10MB on mobile
+              // Only skip extremely large files on mobile to prevent crashes
+              if (isMobile && mediaFile._data && mediaFile._data.uncompressedSize > 50 * 1024 * 1024) {
+                console.warn('Skipping very large file on mobile:', tryPath)
+                continue // Skip files larger than 50MB on mobile only
               }
               
               const blob = await mediaFile.async('blob')
@@ -186,16 +184,16 @@ export const useStories = () => {
               mediaUrls[mediaPath] = URL.createObjectURL(typedBlob)
               extracted++
               
-              // Update progress more frequently
-              if (extracted % 5 === 0 || extracted === targetFiles) {
-                setUploadProgress(`Extracting media files (${extracted}/${targetFiles})...`)
+              // Update progress less frequently for better performance
+              if (extracted % 20 === 0 || extracted === totalMedia) {
+                setUploadProgress(`Extracting media files (${extracted}/${totalMedia})...`)
               }
               break
             } catch (e) {
               console.error('Error extracting media:', tryPath, e)
-              if (isMobile && e.name === 'QuotaExceededError') {
-                alert('Device storage full. Some media files will not be displayed.')
-                break
+              if (isMobile && (e.name === 'QuotaExceededError' || e.message.includes('memory'))) {
+                console.warn('Memory warning on mobile, continuing with reduced quality...')
+                // Don't break completely, just continue
               }
             }
           }
@@ -209,6 +207,13 @@ export const useStories = () => {
       setStories(storiesData)
       setFilteredStories(storiesData)
       setUploadProgress('')
+      
+      // Log summary for debugging
+      console.log(`✅ Stories processing complete:`)
+      console.log(`📊 Total stories: ${storiesData.length}`)
+      console.log(`🖼️  Media files extracted: ${extracted}/${mediaPaths.length}`)
+      console.log(`📄 Stories per page: 50`)
+      console.log(`📖 Total pages: ${Math.ceil(storiesData.length / 50)}`)
       
     } catch (error) {
       console.error('Error processing file:', error)

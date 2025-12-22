@@ -40,8 +40,9 @@ const MobileWarning = () => {
             <h4>Mobile limitations:</h4>
             <ul>
               <li>• File size limited to 100MB</li>
-              <li>• Fewer media files processed</li>
+              <li>• Very large individual files (&gt;50MB) may be skipped</li>
               <li>• iOS Safari may have ZIP file issues</li>
+              <li>• Processing may take longer than desktop</li>
             </ul>
           </div>
           <div className="mobile-warning-suggestion">

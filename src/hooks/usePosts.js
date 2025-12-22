@@ -278,18 +278,20 @@ export const usePosts = () => {
         }
       }
       
-      // Extract media files in post order
+      // Extract ALL media files in post order (no limits)
       let extracted = 0
       const totalMedia = mediaPaths.length
-      // Reasonable limits for posts media
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-      const maxMediaFiles = isMobile ? 200 : 800 // Higher limits for posts
-      const targetFiles = Math.min(totalMedia, maxMediaFiles)
       
-      setUploadProgress(`Extracting media files (0/${targetFiles})...`)
+      setUploadProgress(`Extracting media files (0/${totalMedia})...`)
       
-      for (let i = 0; i < Math.min(mediaPaths.length, maxMediaFiles); i++) {
+      for (let i = 0; i < mediaPaths.length; i++) {
         const mediaPath = mediaPaths[i]
+        
+        // Add small delay on mobile for stability
+        if (isMobile && extracted % 30 === 0) {
+          await new Promise(resolve => setTimeout(resolve, 5))
+        }
         
         const possiblePaths = [
           mediaPath,
@@ -300,6 +302,12 @@ export const usePosts = () => {
           const mediaFile = zipContent.files[tryPath]
           if (mediaFile && !mediaFile.dir) {
             try {
+              // Only skip extremely large files on mobile
+              if (isMobile && mediaFile._data && mediaFile._data.uncompressedSize > 50 * 1024 * 1024) {
+                console.warn('Skipping very large file on mobile:', tryPath)
+                continue
+              }
+              
               const blob = await mediaFile.async('blob')
               const isVideo = mediaPath.includes('videos/') || mediaPath.endsWith('.mp4')
               const mimeType = isVideo ? 'video/mp4' : 'image/jpeg'
@@ -307,13 +315,14 @@ export const usePosts = () => {
               mediaUrls[mediaPath] = URL.createObjectURL(typedBlob)
               extracted++
               
-              // Update progress more frequently
-              if (extracted % 10 === 0 || extracted === targetFiles) {
-                setUploadProgress(`Extracting media files (${extracted}/${targetFiles})...`)
+              // Update progress less frequently for performance
+              if (extracted % 25 === 0 || extracted === totalMedia) {
+                setUploadProgress(`Extracting media files (${extracted}/${totalMedia})...`)
               }
               break
             } catch (e) {
               console.error('Error extracting media:', tryPath, e)
+              // Continue processing even if some files fail
             }
           }
         }
