@@ -23,6 +23,30 @@
   --photo-badge: #ec4899;
 }
 
+/* Mobile Optimizations */
+@media screen and (max-width: 768px) {
+  /* Reduce memory usage on mobile */
+  * {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+  
+  /* iOS Safari specific fixes */
+  body {
+    -webkit-overflow-scrolling: touch;
+    /* Prevent zoom on input focus */
+    font-size: 16px;
+  }
+  
+  /* Reduce animations on mobile for performance */
+  * {
+    animation-duration: 0.3s !important;
+    transition-duration: 0.3s !important;
+  }
+}
+
 /* Global Styles */
 * {
   margin: 0;
@@ -299,6 +323,111 @@ body {
   border-radius: 50%;
 }
 
+/* Enhanced Progress UI */
+.upload-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-height: 60px;
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.progress-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(99, 102, 241, 0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.progress-text {
+  flex: 1;
+  text-align: left;
+}
+
+.progress-main {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.progress-subtitle {
+  font-size: 0.75rem;
+  color: white;
+  font-weight: 400;
+}
+
+@media (max-width: 768px) {
+  .progress-container {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .progress-text {
+    text-align: center;
+  }
+  
+  .progress-main {
+    font-size: 0.8rem;
+  }
+  
+  .progress-subtitle {
+    font-size: 0.7rem;
+  }
+}
+
+/* Progress Bar Component */
+.progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 0.75rem;
+}
+
+.progress-bar-track {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-elevated);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-light));
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-bar-indeterminate {
+  height: 100%;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  border-radius: 3px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.progress-percentage {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  min-width: 35px;
+  text-align: right;
+}
+
 .upload-note {
   margin-top: 2rem;
   padding: 1rem;
@@ -311,6 +440,102 @@ body {
 
 .upload-note strong {
   color: var(--warning);
+}
+
+/* Mobile Warning Component */
+.mobile-warning {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.mobile-warning-content {
+  max-width: 90%;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.mobile-warning-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.mobile-warning-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.mobile-warning-icon {
+  color: var(--accent);
+}
+
+.mobile-warning-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.mobile-warning-close:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.mobile-warning-body p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.mobile-warning-tips {
+  background: var(--bg-elevated);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.mobile-warning-tips h4 {
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.mobile-warning-tips ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mobile-warning-tips li {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  margin-bottom: 0.25rem;
+}
+
+.mobile-warning-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--accent-light);
+  font-size: 0.875rem;
+  padding: 0.5rem;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 6px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
 }
 
 /* Filter Section */

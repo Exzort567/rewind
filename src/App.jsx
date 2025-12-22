@@ -8,7 +8,8 @@ import {
   StoriesGrid, 
   StoryDetail,
   PostsTimeline,
-  PostDetail
+  PostDetail,
+  MobileWarning
 } from './components'
 import { useStories, usePosts } from './hooks'
 import { formatDate } from './utils'
@@ -79,12 +80,24 @@ function App() {
     const file = event.target.files[0]
     if (!file) return
 
+    // Check if mobile device
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+
+    // Mobile-specific file size check
+    if (isMobile && file.size > 100 * 1024 * 1024) { // 100MB limit
+      alert('File too large for mobile device. Please try on a desktop computer or use a smaller Facebook data archive.')
+      return
+    }
+
     setIsUploading(true)
     setUploadProgress('Reading ZIP file...')
     
     try {
       const zip = new JSZip()
       const zipContent = await zip.loadAsync(file)
+      
+      setUploadProgress('Scanning archive contents...')
       
       // Check what data is available
       let hasStoriesData = false
@@ -106,16 +119,23 @@ function App() {
         return
       }
 
+      let processedTypes = []
+      if (hasStoriesData) processedTypes.push('Stories')
+      if (hasPostsData) processedTypes.push('Posts')
+      
+      setUploadProgress(`Found ${processedTypes.join(' and ')} data. Processing...`)
+      await new Promise(resolve => setTimeout(resolve, 800))
+
       // Process both types of data
       if (hasStoriesData) {
-        setUploadProgress('Processing stories...')
+        setUploadProgress('Processing Stories data...')
         // Create a fake event for the stories handler
         const fakeEvent = { target: { files: [file] } }
         await handleStoriesUpload(fakeEvent)
       }
       
       if (hasPostsData) {
-        setUploadProgress('Processing posts...')
+        setUploadProgress('Processing Posts data...')
         const fakeEvent = { target: { files: [file] } }
         await handlePostsUpload(fakeEvent)
       }
@@ -128,7 +148,20 @@ function App() {
       setUploadProgress('')
     } catch (error) {
       console.error('Error processing file:', error)
-      alert('Error processing file. Please make sure you uploaded a valid Facebook data archive.')
+      
+      let errorMessage = 'Error processing file. Please make sure you uploaded a valid Facebook data archive.'
+      
+      if (isMobile) {
+        if (error.name === 'QuotaExceededError' || error.message.includes('memory')) {
+          errorMessage = 'Not enough memory to process this file on mobile device. Please try on a desktop computer or use a smaller archive.'
+        } else if (error.name === 'NetworkError' || error.message.includes('network')) {
+          errorMessage = 'Network error on mobile. Please check your connection and try again.'
+        } else if (isIOS && (error.message.includes('zip') || error.message.includes('decompress'))) {
+          errorMessage = 'iOS Safari has trouble with large ZIP files. Please try using Chrome on your phone or Safari on desktop.'
+        }
+      }
+      
+      alert(errorMessage)
     }
     setIsUploading(false)
   }
@@ -141,6 +174,7 @@ function App() {
   return (
     <div className="app">
       <Background />
+      <MobileWarning />
       
       <Header 
         showReset={hasData} 

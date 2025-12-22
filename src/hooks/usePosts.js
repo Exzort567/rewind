@@ -201,28 +201,50 @@ export const usePosts = () => {
         return
       }
 
+      const totalPosts = postsData.length
+      setUploadProgress(`Found ${totalPosts} posts`)
+      
+      // Small delay to show the count
+      await new Promise(resolve => setTimeout(resolve, 500))
+
       // Extract profile name
       if (profileInfo?.profile_v2?.name?.full_name) {
         setProfileName(decodeText(profileInfo.profile_v2.name.full_name))
       }
 
-      setUploadProgress('Extracting media files...')
+      setUploadProgress('Analyzing posts for media...')
       
       // Extract all media files
       const mediaUrls = {}
       
       // Collect all media paths from posts
       const mediaPaths = new Set()
-      postsData.forEach(post => {
+      let postsWithMedia = 0
+      
+      postsData.forEach((post, index) => {
+        let hasMedia = false
+        
         // Check attachments for media
         post.attachments?.forEach(attachment => {
           attachment.data?.forEach(item => {
             if (item.media?.uri) {
               mediaPaths.add(item.media.uri)
+              hasMedia = true
             }
           })
         })
+        
+        if (hasMedia) {
+          postsWithMedia++
+        }
+        
+        // Update progress every 50 posts
+        if ((index + 1) % 50 === 0 || index === totalPosts - 1) {
+          setUploadProgress(`Analyzed ${index + 1}/${totalPosts} posts...`)
+        }
       })
+      
+      setUploadProgress(`Found ${postsWithMedia} posts with media (${mediaPaths.size} unique files)`)
       
       // Extract profile picture (get the most recent one by sorting filenames)
       if (profilePicPath) {
@@ -255,6 +277,8 @@ export const usePosts = () => {
       let extracted = 0
       const totalMedia = mediaPaths.size
       
+      setUploadProgress(`Extracting media files (0/${totalMedia})...`)
+      
       for (const mediaPath of mediaPaths) {
         const possiblePaths = [
           mediaPath,
@@ -271,7 +295,11 @@ export const usePosts = () => {
               const typedBlob = new Blob([blob], { type: mimeType })
               mediaUrls[mediaPath] = URL.createObjectURL(typedBlob)
               extracted++
-              setUploadProgress(`Extracting media... (${extracted}/${totalMedia})`)
+              
+              // Update progress more frequently
+              if (extracted % 10 === 0 || extracted === totalMedia) {
+                setUploadProgress(`Extracting media files (${extracted}/${totalMedia})...`)
+              }
               break
             } catch (e) {
               console.error('Error extracting media:', tryPath, e)
@@ -281,12 +309,20 @@ export const usePosts = () => {
       }
       
       // Sort posts by timestamp (newest first)
+      setUploadProgress('Organizing posts by date...')
       postsData.sort((a, b) => b.timestamp - a.timestamp)
       
       // Decode Facebook's weird encoding
-      const decodedPosts = postsData.map(post => decodePost(post))
+      setUploadProgress('Decoding post content...')
+      const decodedPosts = postsData.map((post, index) => {
+        if ((index + 1) % 100 === 0) {
+          setUploadProgress(`Decoding posts (${index + 1}/${totalPosts})...`)
+        }
+        return decodePost(post)
+      })
       
-      setUploadProgress('Processing posts and preparing timeline...')
+      setUploadProgress('Finalizing posts...')
+      await new Promise(resolve => setTimeout(resolve, 300))
       
       // Only use regular posts, skip shared content links entirely
       const allPosts = [...decodedPosts]
@@ -294,7 +330,8 @@ export const usePosts = () => {
       // Sort all posts by timestamp (newest first)
       allPosts.sort((a, b) => b.timestamp - a.timestamp)
       
-      setUploadProgress('Processing posts and preparing timeline...')
+      setUploadProgress('Building timeline...')
+      await new Promise(resolve => setTimeout(resolve, 200))
       
       setMediaFiles(mediaUrls)
       setPosts(allPosts)

@@ -58,10 +58,20 @@ export const useStories = () => {
     }
   }, [])
 
+  // Check if device is mobile/iOS
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+
   // Handle file upload
   const handleFileUpload = async (event) => {
     const file = event.target.files[0]
     if (!file) return
+
+    // Check file size for mobile devices
+    if (isMobile && file.size > 100 * 1024 * 1024) { // 100MB limit for mobile
+      alert('File too large for mobile device. Please try on a desktop computer or use a smaller archive.')
+      return
+    }
 
     setIsUploading(true)
     setUploadProgress('Reading ZIP file...')
@@ -101,25 +111,53 @@ export const useStories = () => {
         return
       }
 
-      setUploadProgress('Extracting media files...')
+      const storiesData = data.archived_stories_v2
+      const totalStories = storiesData.length
+      setUploadProgress(`Found ${totalStories} stories`)
+      
+      // Small delay to show the count
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      setUploadProgress('Analyzing media files...')
       
       // Extract all media files
       const mediaUrls = {}
-      const storiesData = data.archived_stories_v2
       
       // Collect all media paths
       const mediaPaths = new Set()
-      storiesData.forEach(story => {
+      let storiesWithMedia = 0
+      
+      storiesData.forEach((story, index) => {
         if (story.attachments?.[0]?.data?.[0]?.media?.uri) {
           mediaPaths.add(story.attachments[0].data[0].media.uri)
+          storiesWithMedia++
+        }
+        
+        // Update progress every 100 stories
+        if ((index + 1) % 100 === 0 || index === totalStories - 1) {
+          setUploadProgress(`Analyzed ${index + 1}/${totalStories} stories...`)
         }
       })
       
-      // Extract media files
+      setUploadProgress(`Found ${storiesWithMedia} stories with media (${mediaPaths.size} unique files)`)
+      
+      // Extract media files with mobile optimizations
       let extracted = 0
       const totalMedia = mediaPaths.size
+      const maxMediaFiles = isMobile ? 50 : 200 // Limit media files on mobile
+      const targetFiles = Math.min(totalMedia, maxMediaFiles)
       
-      for (const mediaPath of mediaPaths) {
+      setUploadProgress(`Extracting media files (0/${targetFiles})...`)
+      
+      // Sort media paths to prioritize smaller files on mobile
+      const sortedPaths = Array.from(mediaPaths)
+      
+      for (const mediaPath of sortedPaths.slice(0, maxMediaFiles)) {
+        // Add delay on mobile to prevent memory issues
+        if (isMobile && extracted % 5 === 0) {
+          await new Promise(resolve => setTimeout(resolve, 50))
+        }
+        
         const possiblePaths = [
           mediaPath,
           storiesPath.split('/')[0] + '/' + mediaPath,
@@ -129,20 +167,36 @@ export const useStories = () => {
           const mediaFile = zipContent.files[tryPath]
           if (mediaFile && !mediaFile.dir) {
             try {
+              // Check file size before processing on mobile
+              if (isMobile && mediaFile._data && mediaFile._data.uncompressedSize > 5 * 1024 * 1024) {
+                continue // Skip files larger than 5MB on mobile
+              }
+              
               const blob = await mediaFile.async('blob')
               const isVideo = mediaPath.includes('videos/') || mediaPath.endsWith('.mp4')
               const mimeType = isVideo ? 'video/mp4' : 'image/jpeg'
               const typedBlob = new Blob([blob], { type: mimeType })
               mediaUrls[mediaPath] = URL.createObjectURL(typedBlob)
               extracted++
-              setUploadProgress(`Extracting media... (${extracted}/${totalMedia})`)
+              
+              // Update progress more frequently
+              if (extracted % 5 === 0 || extracted === targetFiles) {
+                setUploadProgress(`Extracting media files (${extracted}/${targetFiles})...`)
+              }
               break
             } catch (e) {
               console.error('Error extracting media:', tryPath, e)
+              if (isMobile && e.name === 'QuotaExceededError') {
+                alert('Device storage full. Some media files will not be displayed.')
+                break
+              }
             }
           }
         }
       }
+      
+      setUploadProgress('Finalizing stories...')
+      await new Promise(resolve => setTimeout(resolve, 300))
       
       setMediaFiles(mediaUrls)
       setStories(storiesData)
@@ -151,7 +205,20 @@ export const useStories = () => {
       
     } catch (error) {
       console.error('Error processing file:', error)
-      alert('Error processing file. Please make sure you uploaded a valid Facebook data archive.')
+      
+      let errorMessage = 'Error processing file. Please make sure you uploaded a valid Facebook data archive.'
+      
+      if (isMobile) {
+        if (error.name === 'QuotaExceededError' || error.message.includes('memory')) {
+          errorMessage = 'Not enough memory to process this file on mobile device. Please try on a desktop computer or use a smaller archive.'
+        } else if (error.name === 'NetworkError' || error.message.includes('network')) {
+          errorMessage = 'Network error on mobile. Please check your connection and try again.'
+        } else if (isIOS && error.message.includes('zip')) {
+          errorMessage = 'iOS Safari has trouble with large ZIP files. Please try using Chrome or Safari on desktop.'
+        }
+      }
+      
+      alert(errorMessage)
     }
     setIsUploading(false)
   }

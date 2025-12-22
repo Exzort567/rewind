@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Upload, Video, Camera, Calendar, FolderOpen, Clock } from 'lucide-react'
 import ExportInstructions from './ExportInstructions'
+import ProgressBar from './ProgressBar'
 
 const UploadSection = ({ onFileUpload, isUploading, uploadProgress }) => {
   const [showInstructions, setShowInstructions] = useState(false)
@@ -65,14 +66,20 @@ const UploadSection = ({ onFileUpload, isUploading, uploadProgress }) => {
             />
             <span className="btn-content">
               {isUploading ? (
-                <>
-                  <motion.div 
-                    className="spinner"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  />
-                  {uploadProgress || 'Processing...'}
-                </>
+                <div className="upload-progress">
+                  <div className="progress-container">
+                    <motion.div 
+                      className="progress-spinner"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    />
+                    <div className="progress-text">
+                      <div className="progress-main">{uploadProgress || 'Processing...'}</div>
+                      <div className="progress-subtitle">Please wait, this may take a while for large files</div>
+                    </div>
+                  </div>
+                  <ProgressBar label={uploadProgress} />
+                </div>
               ) : (
                 <>
                   <Upload size={20} />
