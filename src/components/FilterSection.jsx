@@ -1,11 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search } from 'lucide-react'
 
 const FilterSection = ({ 
   dateFilter, 
   setDateFilter, 
-  searchTerm, 
-  setSearchTerm, 
   storiesCount, 
   totalCount 
 }) => {
@@ -21,16 +18,7 @@ const FilterSection = ({
           {storiesCount} of {totalCount}
         </div>
       </div>
-      
-      <div className="search-bar">
-        <Search size={18} />
-        <input 
-          type="text"
-          placeholder="Search by caption..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
+
       
       <div className="date-filters">
         <div className="filter-tabs">

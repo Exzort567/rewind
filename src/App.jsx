@@ -27,8 +27,6 @@ function App() {
     uploadProgress: storiesProgress,
     selectedStory,
     setSelectedStory,
-    searchTerm: storiesSearchTerm,
-    setSearchTerm: setStoriesSearchTerm,
     handleFileUpload: handleStoriesUpload,
     getMediaInfo,
     resetApp: resetStories
@@ -169,7 +167,7 @@ function App() {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [storiesDateFilter, storiesSearchTerm, stories.length, postsDateFilter, posts.length, yearFilter, postTypeFilter])
+  }, [storiesDateFilter, stories.length, postsDateFilter, posts.length, yearFilter, postTypeFilter])
 
   return (
     <div className="app">
@@ -251,8 +249,6 @@ function App() {
                       <FilterSection 
                         dateFilter={storiesDateFilter}
                         setDateFilter={setStoriesDateFilter}
-                        searchTerm={storiesSearchTerm}
-                        setSearchTerm={setStoriesSearchTerm}
                         storiesCount={filteredStories.length}
                         totalCount={stories.length}
                       />

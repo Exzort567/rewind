@@ -15,7 +15,6 @@ export const useStories = () => {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState('')
   const [selectedStory, setSelectedStory] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
 
   // Filter stories based on date and search
   const filterStories = useCallback(() => {
@@ -37,15 +36,8 @@ export const useStories = () => {
       })
     }
     
-    // Apply search filter
-    if (searchTerm) {
-      filtered = filtered.filter(story => 
-        story.title?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-    
     setFilteredStories(filtered)
-  }, [stories, dateFilter, searchTerm])
+  }, [stories, dateFilter])
 
   useEffect(() => {
     filterStories()
@@ -276,8 +268,6 @@ export const useStories = () => {
     uploadProgress,
     selectedStory,
     setSelectedStory,
-    searchTerm,
-    setSearchTerm,
     handleFileUpload,
     getMediaInfo,
     resetApp
