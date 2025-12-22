@@ -217,8 +217,9 @@ export const usePosts = () => {
       // Extract all media files
       const mediaUrls = {}
       
-      // Collect all media paths from posts
-      const mediaPaths = new Set()
+      // Collect all media paths from posts IN POST ORDER
+      const mediaPaths = []
+      const mediaPathSet = new Set()
       let postsWithMedia = 0
       
       postsData.forEach((post, index) => {
@@ -228,7 +229,11 @@ export const usePosts = () => {
         post.attachments?.forEach(attachment => {
           attachment.data?.forEach(item => {
             if (item.media?.uri) {
-              mediaPaths.add(item.media.uri)
+              const mediaUri = item.media.uri
+              if (!mediaPathSet.has(mediaUri)) {
+                mediaPaths.push(mediaUri)
+                mediaPathSet.add(mediaUri)
+              }
               hasMedia = true
             }
           })
@@ -244,7 +249,7 @@ export const usePosts = () => {
         }
       })
       
-      setUploadProgress(`Found ${postsWithMedia} posts with media (${mediaPaths.size} unique files)`)
+      setUploadProgress(`Found ${postsWithMedia} posts with media (${mediaPaths.length} unique files)`)
       
       // Extract profile picture (get the most recent one by sorting filenames)
       if (profilePicPath) {
@@ -273,13 +278,19 @@ export const usePosts = () => {
         }
       }
       
-      // Extract media files
+      // Extract media files in post order
       let extracted = 0
-      const totalMedia = mediaPaths.size
+      const totalMedia = mediaPaths.length
+      // Reasonable limits for posts media
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      const maxMediaFiles = isMobile ? 200 : 800 // Higher limits for posts
+      const targetFiles = Math.min(totalMedia, maxMediaFiles)
       
-      setUploadProgress(`Extracting media files (0/${totalMedia})...`)
+      setUploadProgress(`Extracting media files (0/${targetFiles})...`)
       
-      for (const mediaPath of mediaPaths) {
+      for (let i = 0; i < Math.min(mediaPaths.length, maxMediaFiles); i++) {
+        const mediaPath = mediaPaths[i]
+        
         const possiblePaths = [
           mediaPath,
           postsPath.split('/')[0] + '/' + mediaPath,
@@ -297,8 +308,8 @@ export const usePosts = () => {
               extracted++
               
               // Update progress more frequently
-              if (extracted % 10 === 0 || extracted === totalMedia) {
-                setUploadProgress(`Extracting media files (${extracted}/${totalMedia})...`)
+              if (extracted % 10 === 0 || extracted === targetFiles) {
+                setUploadProgress(`Extracting media files (${extracted}/${targetFiles})...`)
               }
               break
             } catch (e) {

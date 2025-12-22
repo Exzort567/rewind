@@ -123,13 +123,19 @@ export const useStories = () => {
       // Extract all media files
       const mediaUrls = {}
       
-      // Collect all media paths
-      const mediaPaths = new Set()
+      // Collect all media paths IN STORY ORDER (not randomly)
+      const mediaPaths = []
+      const mediaPathSet = new Set()
       let storiesWithMedia = 0
       
+      // Process stories in order to prioritize early stories' media
       storiesData.forEach((story, index) => {
         if (story.attachments?.[0]?.data?.[0]?.media?.uri) {
-          mediaPaths.add(story.attachments[0].data[0].media.uri)
+          const mediaUri = story.attachments[0].data[0].media.uri
+          if (!mediaPathSet.has(mediaUri)) {
+            mediaPaths.push(mediaUri)
+            mediaPathSet.add(mediaUri)
+          }
           storiesWithMedia++
         }
         
@@ -139,20 +145,21 @@ export const useStories = () => {
         }
       })
       
-      setUploadProgress(`Found ${storiesWithMedia} stories with media (${mediaPaths.size} unique files)`)
+      setUploadProgress(`Found ${storiesWithMedia} stories with media (${mediaPaths.length} unique files)`)
       
-      // Extract media files with mobile optimizations
+      // Extract media files with smart prioritization
       let extracted = 0
-      const totalMedia = mediaPaths.size
-      const maxMediaFiles = isMobile ? 50 : 200 // Limit media files on mobile
+      const totalMedia = mediaPaths.length
+      // Increase limits but still be reasonable for memory
+      const maxMediaFiles = isMobile ? 150 : 500 // Increased limits
       const targetFiles = Math.min(totalMedia, maxMediaFiles)
       
       setUploadProgress(`Extracting media files (0/${targetFiles})...`)
       
-      // Sort media paths to prioritize smaller files on mobile
-      const sortedPaths = Array.from(mediaPaths)
-      
-      for (const mediaPath of sortedPaths.slice(0, maxMediaFiles)) {
+      // Process media files in story order (no sorting/randomization)
+      for (let i = 0; i < Math.min(mediaPaths.length, maxMediaFiles); i++) {
+        const mediaPath = mediaPaths[i]
+        
         // Add delay on mobile to prevent memory issues
         if (isMobile && extracted % 5 === 0) {
           await new Promise(resolve => setTimeout(resolve, 50))
@@ -168,8 +175,8 @@ export const useStories = () => {
           if (mediaFile && !mediaFile.dir) {
             try {
               // Check file size before processing on mobile
-              if (isMobile && mediaFile._data && mediaFile._data.uncompressedSize > 5 * 1024 * 1024) {
-                continue // Skip files larger than 5MB on mobile
+              if (isMobile && mediaFile._data && mediaFile._data.uncompressedSize > 10 * 1024 * 1024) {
+                continue // Skip files larger than 10MB on mobile
               }
               
               const blob = await mediaFile.async('blob')
