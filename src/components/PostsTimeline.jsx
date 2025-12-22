@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ChevronLeft, ChevronRight, Calendar, Image, Video, MessageSquare, Filter, Loader2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar, Image, Video, MessageSquare, Filter, Loader2 } from 'lucide-react'
 import PostCard from './PostCard'
 
 const PostsTimeline = ({ 
@@ -14,8 +14,6 @@ const PostsTimeline = ({
   availableYears,
   postTypeFilter,
   setPostTypeFilter,
-  searchTerm,
-  setSearchTerm,
   totalCount,
   isProcessing,
   profilePicture,
@@ -62,16 +60,7 @@ const PostsTimeline = ({
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="search-bar">
-          <Search size={18} />
-          <input 
-            type="text"
-            placeholder="Search your posts..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+
 
         {/* Filters Row */}
         <div className="timeline-filters">

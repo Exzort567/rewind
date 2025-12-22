@@ -49,8 +49,6 @@ function App() {
     uploadProgress: postsProgress,
     selectedPost,
     setSelectedPost,
-    searchTerm: postsSearchTerm,
-    setSearchTerm: setPostsSearchTerm,
     handleFileUpload: handlePostsUpload,
     getPostInfo,
     resetApp: resetPosts,
@@ -138,7 +136,7 @@ function App() {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [storiesDateFilter, storiesSearchTerm, stories.length, postsDateFilter, postsSearchTerm, posts.length, yearFilter, postTypeFilter])
+  }, [storiesDateFilter, storiesSearchTerm, stories.length, postsDateFilter, posts.length, yearFilter, postTypeFilter])
 
   return (
     <div className="app">
@@ -204,7 +202,11 @@ function App() {
                       >
                         <span className="view-icon">📰</span>
                         Timeline
-                        {hasPosts && <span className="view-count">{posts.length}</span>}
+                        {postsProcessing ? (
+                          <span className="view-count loading">Loading...</span>
+                        ) : (
+                          hasPosts && <span className="view-count">{filteredPosts.length}</span>
+                        )}
                       </button>
                     </div>
                   )}
@@ -245,8 +247,6 @@ function App() {
                       availableYears={availableYears}
                       postTypeFilter={postTypeFilter}
                       setPostTypeFilter={setPostTypeFilter}
-                      searchTerm={postsSearchTerm}
-                      setSearchTerm={setPostsSearchTerm}
                       totalCount={posts.length}
                       isProcessing={postsProcessing}
                       profilePicture={profilePicture}

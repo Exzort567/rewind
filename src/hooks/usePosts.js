@@ -20,7 +20,6 @@ export const usePosts = () => {
   const [isProcessing, setIsProcessing] = useState(false)
   const [uploadProgress, setUploadProgress] = useState('')
   const [selectedPost, setSelectedPost] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
   const [postTypeFilter, setPostTypeFilter] = useState('all') // all, photos, videos, status
 
   // Extract years from posts
@@ -60,18 +59,7 @@ export const usePosts = () => {
         return isWithinInterval(postDate, { start, end })
       })
     }
-    
-    // Apply search filter
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase()
-      filtered = filtered.filter(post => {
-        const hasMatchingText = post.data?.some(d => 
-          d.post?.toLowerCase().includes(term)
-        )
-        const hasMatchingTitle = post.title?.toLowerCase().includes(term)
-        return hasMatchingText || hasMatchingTitle
-      })
-    }
+
 
     // Apply post type filter
     if (postTypeFilter !== 'all') {
@@ -116,7 +104,7 @@ export const usePosts = () => {
     })
     
     setFilteredPosts(filtered)
-  }, [posts, dateFilter, searchTerm, yearFilter, postTypeFilter])
+  }, [posts, dateFilter, yearFilter, postTypeFilter])
 
   useEffect(() => {
     filterPosts()
@@ -477,8 +465,6 @@ export const usePosts = () => {
     uploadProgress,
     selectedPost,
     setSelectedPost,
-    searchTerm,
-    setSearchTerm,
     handleFileUpload,
     getPostInfo,
     resetApp,
