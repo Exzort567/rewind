@@ -3,20 +3,18 @@ import { X, Smartphone, Monitor } from 'lucide-react'
 
 const MobileWarning = () => {
   const [show, setShow] = useState(false)
-  const [dismissed, setDismissed] = useState(false)
 
   useEffect(() => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
     const hasBeenDismissed = localStorage.getItem('mobileWarningDismissed')
     
-    if (isMobile && !hasBeenDismissed && !dismissed) {
+    if (isMobile && !hasBeenDismissed) {
       setShow(true)
     }
-  }, [dismissed])
+  }, []) // Remove dismissed dependency and only run once on mount
 
   const handleDismiss = () => {
     setShow(false)
-    setDismissed(true)
     localStorage.setItem('mobileWarningDismissed', 'true')
   }
 
